@@ -1,5 +1,4 @@
-// Package disk provides an implementation of httpcache.Cache that uses the filesystem to store http responses.
-package disk
+package httpcache
 
 import (
 	"io/ioutil"
@@ -13,15 +12,15 @@ const (
 	defaultPathPerm os.FileMode = 0777
 )
 
-// Cache is an implementation of httpcache.Cache.
-type Cache struct {
+// DiskCache is an implementation of httpcache.Cache.
+type DiskCache struct {
 	Dir      string
 	PathPerm os.FileMode
 	FilePerm os.FileMode
 }
 
 // Get returns a dumped response if the file corresponding to key exists.
-func (c Cache) Get(key string) ([]byte, bool) {
+func (c DiskCache) Get(key string) ([]byte, bool) {
 	b, err := ioutil.ReadFile(filepath.Join(c.Dir, key))
 	if err != nil {
 		return nil, false
@@ -30,7 +29,7 @@ func (c Cache) Get(key string) ([]byte, bool) {
 }
 
 // Set stores a dumped response to disk with filename key.
-func (c Cache) Set(key string, response []byte) {
+func (c DiskCache) Set(key string, response []byte) {
 	if _, err := os.Stat(c.Dir); err != nil {
 		if c.PathPerm == 0 {
 			c.PathPerm = defaultPathPerm
