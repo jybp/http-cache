@@ -23,16 +23,20 @@ type Cache interface {
 type Transport struct {
 	Transport http.RoundTripper // used to make actual requests.
 	Cache     Cache
-	Filter    func(r *http.Request) bool // return true to ignore the cache.
+}
+
+// Default uses http.DefaultTransport to make actual requests.
+func Default(c Cache) *Transport {
+	return Custom(http.DefaultTransport, c)
+}
+
+// Custom uses t to make actual requests.
+func Custom(t http.RoundTripper, c Cache) *Transport {
+	return &Transport{Transport: t, Cache: c}
 }
 
 // RoundTrip implements the cache logic.
-// If the request is filtered out, the cache is not used and the request is executed.
-// If the cache contains a cached response, it will be used without executing the request.
 func (t Transport) RoundTrip(r *http.Request) (*http.Response, error) {
-	if t.Filter != nil && t.Filter(r) {
-		return t.Transport.RoundTrip(r)
-	}
 	h := md5.New()
 	io.WriteString(h, r.URL.String())
 	key := hex.EncodeToString(h.Sum(nil))
